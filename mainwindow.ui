@@ -109,6 +109,19 @@
         </spacer>
        </item>
        <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Вариант сортировки</string>
+         </property>
+         <property name="buddy">
+          <cstring></cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox"/>
+       </item>
+       <item>
         <widget class="QPushButton" name="pbSort">
          <property name="text">
           <string>Сортировка</string>

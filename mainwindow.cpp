@@ -7,8 +7,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-
+    QStringList lst;
+    lst << "По фамилии" << "По адресам" << "По номеру телефона";
+    ui->comboBox->addItems(lst);
 }
 
 MainWindow::~MainWindow()
@@ -19,35 +20,42 @@ MainWindow::~MainWindow()
 void MainWindow::on_pbOpenFile_released()
 {
 
-    QString filename = QFileDialog::getOpenFileName(this, tr("Excel (*.xlsx)"));
-   QAxObject* excel = new QAxObject("Excel.Application", 0);
-       QAxObject* workbooks = excel->querySubObject("Workbooks");
-       QAxObject* workbook = workbooks->querySubObject("Open(const QString&)", filename);
-       QAxObject* sheets = workbook->querySubObject("Worksheets");
-       QAxObject* sheet = sheets->querySubObject("Item(int)", 1);
-       //sheets->property("Count").toInt();
-       QAxObject* usedRange = sheet->querySubObject("UsedRange");
-       QAxObject* rows = usedRange->querySubObject("Rows");
-       int countRows = rows->property("Count").toInt();
-       QAxObject* usedRangep = sheet->querySubObject("UsedRangep");
-       QAxObject* columns = usedRange->querySubObject("Columns");
-       int countCols = columns->property("Count").toInt();
-       ui->tableWidget->setRowCount(countRows);
-       ui->tableWidget->setColumnCount(countCols);
+    QString filename = QFileDialog::getOpenFileName(this, tr("CSV (*.csv)"));
+        QFile file(filename);
+    if ( !file.open(QFile::ReadOnly | QFile::Text) ) {
+           qDebug() << "File not exists";
+       } else {
+           QTextStream in(&file);
 
-            for ( int row = 0; row < countRows; row++ ){
-                for ( int column = 0; column < countCols; column++ ){
-           QAxObject* cell = sheet->querySubObject("Cells(int,int)", row + 1, column + 1 );
-           QVariant value = cell->property("Value");
-           QTableWidgetItem* item = new QTableWidgetItem(value.toString());
-            ui->tableWidget->setItem(row, column, item);
+          QList<QStringList> standardItemsList;
+           while (!in.atEnd())
+           {
+
+               QString lineRaw = in.readLine();
+
+               QStringList str = lineRaw.split(";");
+               standardItemsList.append(str);
+
+           }
+
+           file.close();
+
+           int countRows = standardItemsList.size();
+           int countCols = 3;
+
+            ui->tableWidget->setRowCount(countRows);
+            ui->tableWidget->setColumnCount(countCols);
+
+           for ( int row = 0; row < countRows; row++ ){
+               for ( int column = 0; column < countCols; column++ ){
+
+                    ui->tableWidget->setItem(row, column,  new QTableWidgetItem(standardItemsList[row][column]));
+                }
+           }
+
+
+
        }
-   }
-   workbook->dynamicCall("Close()");
-   excel->dynamicCall("Quit()");
-    delete workbooks;
-
-   delete excel;
 }
 
 void MainWindow::on_pbAdd_released()
@@ -76,31 +84,84 @@ void MainWindow::guidslot(QString fio, QString adr, QString numphone, QPixmap px
 
 
  }
+QList<QStringList> MainWindow::Sorting(QList<QStringList> list){
+    int row = ui->tableWidget->rowCount();
+
+    sorts sortt;
+    switch (ui->comboBox->currentIndex()) {
+        case 0:
+            qDebug() << "По фамилии";
 
 
+            sortt.bubbleSort(&list, row);
+
+            break;
+        case 1:
+            qDebug() << "По адресам";
+            for (int i = 0; i < row; i++){
+                QString t1 = list[i][0];
+                QString t2 = list[i][1];
+                list[i][0] = t2;
+                list[i][1] = t1;
+
+            }
+
+           sortt.bubbleSort(&list, row);
+
+           for (int i = 0; i < row; i++){
+               QString t1 = list[i][0];
+               QString t2 = list[i][1];
+               list[i][0] = t2;
+               list[i][1] = t1;
+
+           }
+            break;
+    case 2:
+        qDebug() << "По номерам";
+        for (int i = 0; i < row; i++){
+            QString t1 = list[i][0];
+            QString t2 = list[i][2];
+            list[i][0] = t2;
+            list[i][2] = t1;
+            qDebug() << list[i];
+        }
+
+       sortt.bubbleSort(&list, row);
+
+       for (int i = 0; i < row; i++){
+           QString t1 = list[i][0];
+           QString t2 = list[i][2];
+           list[i][0] = t2;
+           list[i][2] = t1;
+
+       }
+        break;
+
+    }
+
+    return list;
+
+
+
+}
 void MainWindow::on_pbSort_released()
 {
     int row = ui->tableWidget->rowCount();
     int column = ui->tableWidget->columnCount();
      QList<QStringList> list;
 
-     qDebug() << "0";
-     for (int i = 0; i < row; i++){
-           QStringList listittem;
+    for (int i = 0; i < row; i++){
+          QStringList listittem;
 
-        for(int j = 0; j < column; j++){
-            listittem.append(ui->tableWidget->item(i,j)->text());
+       for(int j = 0; j < column; j++){
+           listittem.append(ui->tableWidget->item(i,j)->text());
 
-        }
-        list.append(listittem);
-
-
-     }
+       }
+       list.append(listittem);
 
 
-    sorts sortt;
-    sortt.bubbleSort(&list, row);
-
+    }
+    list = Sorting(list);
 
  for (int i = 0; i < row; i++){
 
@@ -108,6 +169,7 @@ void MainWindow::on_pbSort_released()
             ui->tableWidget->setItem(i, j,new QTableWidgetItem(list[i][j]));
           }
       }
+
 
 }
 
@@ -159,35 +221,26 @@ void MainWindow::on_lEditfind_textChanged(const QString &arg1)
 
 void MainWindow::on_pbsave_released()
 {
-    // Получить путь сохранения
-       QString filepath=QFileDialog::getSaveFileName(this,tr("Save"),".",tr(" (*.xlsx)"));
-       if(!filepath.isEmpty()){
-           QAxObject *excel = new QAxObject("Excel.Application", 0);
 
-           // Получить коллекцию рабочих книг
-           QAxObject *workbooks = excel->querySubObject("WorkBooks");
-           // Создать новую рабочую книгу
-           workbooks->dynamicCall("Add");
-           // Получить текущую рабочую книгу
-           QAxObject *workbook = excel->querySubObject("ActiveWorkBook");
-           // получить коллекцию рабочих листов
-           QAxObject *worksheets = workbook->querySubObject("Sheets");
-                      // Получить коллекцию рабочего листа 1, то есть лист1
-             QAxObject* sheet = worksheets->querySubObject("Item(int)", 1);
-           // Установить данные таблицы
-             for(int j = 1;j<ui->tableWidget->columnCount()+1;j++)
-             {
-               for(int i = 1;i<ui->tableWidget->rowCount()+1;i++)
-               {
-                   QAxObject *Range = sheet->querySubObject("Cells(int,int)", i, j);
-                   Range->dynamicCall("SetValue(const QString &)",ui->tableWidget->item(i-1,j-1)->data(Qt::DisplayRole).toString());
-               }
+       QString filepath=QFileDialog::getSaveFileName(this,tr("Save"),".",tr(" (*.csv)"));
+       if(!filepath.isEmpty()){
+           QFile f(filepath);
+           if( f.open( QIODevice::WriteOnly ) )
+           {
+           QTextStream ts(&f);
+
+           QAbstractItemModel *model = ui->tableWidget->model();
+           for(int r=0; r< model->rowCount(); r++)
+           {
+              for(int c = 0; c< model->columnCount(); c++)
+              {
+                 ts << model->index(r,c).data().toString() << ';';
+              }
+              ts << '\n';
            }
-           workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(filepath));// Сохранить в FilePath
-           workbook->dynamicCall("Close()");// закрыть рабочую книгу
-           excel->dynamicCall("Quit()");// выключить Excel
-           delete excel;
-           excel=NULL;
+           f.close();
+           }
+
            qDebug() << "\ n успешный экспорт !!!";
        }
 

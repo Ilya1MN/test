@@ -41,6 +41,8 @@ private slots:
 
     void on_pbsave_released();
 
+    QList<QStringList> Sorting(QList<QStringList>);
+
 private:
     Ui::MainWindow *ui;
 
