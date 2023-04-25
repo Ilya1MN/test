@@ -34,8 +34,9 @@ void MainWindow::on_pbOpenFile_released()
        int countCols = columns->property("Count").toInt();
        ui->tableWidget->setRowCount(countRows);
        ui->tableWidget->setColumnCount(countCols);
-       for ( int column = 0; column < 4; column++ ){
-       for ( int row = 0; row < countRows; row++ ){
+
+            for ( int row = 0; row < countRows; row++ ){
+                for ( int column = 0; column < countCols; column++ ){
            QAxObject* cell = sheet->querySubObject("Cells(int,int)", row + 1, column + 1 );
            QVariant value = cell->property("Value");
            QTableWidgetItem* item = new QTableWidgetItem(value.toString());
@@ -44,7 +45,9 @@ void MainWindow::on_pbOpenFile_released()
    }
    workbook->dynamicCall("Close()");
    excel->dynamicCall("Quit()");
+    delete workbooks;
 
+   delete excel;
 }
 
 void MainWindow::on_pbAdd_released()
@@ -78,13 +81,14 @@ void MainWindow::guidslot(QString fio, QString adr, QString numphone, QPixmap px
 void MainWindow::on_pbSort_released()
 {
     int row = ui->tableWidget->rowCount();
-
+    int column = ui->tableWidget->columnCount();
      QList<QStringList> list;
 
+     qDebug() << "0";
      for (int i = 0; i < row; i++){
            QStringList listittem;
 
-        for(int j = 0; j < 4; j++){
+        for(int j = 0; j < column; j++){
             listittem.append(ui->tableWidget->item(i,j)->text());
 
         }
@@ -92,13 +96,15 @@ void MainWindow::on_pbSort_released()
 
 
      }
+
+
     sorts sortt;
     sortt.bubbleSort(&list, row);
 
 
  for (int i = 0; i < row; i++){
 
-    for(int j = 0; j < 4; j++){
+    for(int j = 0; j < column; j++){
             ui->tableWidget->setItem(i, j,new QTableWidgetItem(list[i][j]));
           }
       }
@@ -122,9 +128,9 @@ void MainWindow::on_pbFind_released()
     {
         for (int i = 0; i < ui->tableWidget->rowCount(); i++)
         {
-            if (ui->lEditfind->text() == ui->tableWidget->item(i, 1)->text())
+            if (ui->lEditfind->text() == ui->tableWidget->item(i, 0)->text())
             {
-              qDebug() << ui->lEditfind->text() <<  "   " << ui->tableWidget->item(i, 1)->text();
+              qDebug() << ui->lEditfind->text() <<  "   " << ui->tableWidget->item(i, 0)->text();
             }
         }
     }
@@ -137,14 +143,14 @@ void MainWindow::on_lEditfind_textChanged(const QString &arg1)
     {
         for (int i = 0; i < ui->tableWidget->rowCount(); i++)
         {
-            ui->tableWidget->item(i, 1)->setBackgroundColor(QColor(255,255,255));
+            ui->tableWidget->item(i, 0)->setBackgroundColor(QColor(255,255,255));
 
-            if (ui->lEditfind->text() == ui->tableWidget->item(i, 1)->text() )
+            if (ui->lEditfind->text() == ui->tableWidget->item(i, 0)->text() )
             {
 
-                    ui->tableWidget->item(i, 1)->setBackgroundColor(QColor(50,50,250));
+                    ui->tableWidget->item(i, 0)->setBackgroundColor(QColor(50,50,250));
 
-                  //qDebug() << ui->lEditfind->text() <<  "   " << ui->tableWidget->item(i, 1)->text();
+
             }
 
         }
@@ -156,13 +162,8 @@ void MainWindow::on_pbsave_released()
     // Получить путь сохранения
        QString filepath=QFileDialog::getSaveFileName(this,tr("Save"),".",tr(" (*.xlsx)"));
        if(!filepath.isEmpty()){
-           QAxObject *excel = new QAxObject(this);
-           // подключить управление Excel
-           excel->setControl("Excel.Application");
-           // нет окна отображения
-           excel->dynamicCall("SetVisible (bool Visible)","false");
-           // Информация о предупреждении не отображается. Если True отключена, это будет показано подсказкой, аналогичной «файлу, который был изменен, независимо от того, сохраняется ли он»
-           excel->setProperty("DisplayAlerts", false);
+           QAxObject *excel = new QAxObject("Excel.Application", 0);
+
            // Получить коллекцию рабочих книг
            QAxObject *workbooks = excel->querySubObject("WorkBooks");
            // Создать новую рабочую книгу
@@ -171,15 +172,14 @@ void MainWindow::on_pbsave_released()
            QAxObject *workbook = excel->querySubObject("ActiveWorkBook");
            // получить коллекцию рабочих листов
            QAxObject *worksheets = workbook->querySubObject("Sheets");
-           // Получить коллекцию рабочего листа 1, то есть лист1
-           QAxObject *worksheet = worksheets->querySubObject("Item(int)",1);
-
+                      // Получить коллекцию рабочего листа 1, то есть лист1
+             QAxObject* sheet = worksheets->querySubObject("Item(int)", 1);
            // Установить данные таблицы
-           for(int i = 1;i<ui->tableWidget->rowCount()+1;i++)
-           {
-               for(int j = 1;j<ui->tableWidget->columnCount()+1;j++)
+             for(int j = 1;j<ui->tableWidget->columnCount()+1;j++)
+             {
+               for(int i = 1;i<ui->tableWidget->rowCount()+1;i++)
                {
-                   QAxObject *Range = worksheet->querySubObject("Cells(int,int)", i, j);
+                   QAxObject *Range = sheet->querySubObject("Cells(int,int)", i, j);
                    Range->dynamicCall("SetValue(const QString &)",ui->tableWidget->item(i-1,j-1)->data(Qt::DisplayRole).toString());
                }
            }
