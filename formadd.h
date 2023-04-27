@@ -20,7 +20,8 @@ public:
     ~FormAdd();
 
 signals:
-    void guid(QString,QString,QString, QPixmap);
+        void guid(QString,QString,QString, QByteArray);
+   // void guid(QString,QString,QString, QPixmap);
 private slots:
     void on_pbadd_released();
 
@@ -29,7 +30,7 @@ private slots:
 private:
     Ui::FormAdd *ui;
     QPixmap px;
-
+    QByteArray imagebyarr;
 };
 
 #endif // FORMADD_H

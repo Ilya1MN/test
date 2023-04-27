@@ -1,25 +1,25 @@
-#include "sorts.h"
+#include "sorttext.h"
 
-
-sorts::sorts(QObject *parent) : QObject(parent)
+sorttext::sorttext(QObject *parent) : QObject(parent)
 {
 
 }
-///////////Сортировка пузырьком
-QList<QStringList> sorts::bubbleSort(QList<QStringList> list, int listLength)
+////////////////Пузырьковая сортировка//////////////////////////////////////////////////
+QStringList sorttext::bubbleSort(QStringList list, int listLength)
 {
+
     while(listLength--)
-    {
-        for(int i = 0; i < listLength; i++)
-        {
-                list.swap(i, i + 1);
-        }
-    }
+      {
+          for(int i = 0; i < listLength; i++)
+          {
+                  list.swap(i, i + 1);
+          }
+      }
     return list;
 }
 
 /////////////////////////////////// Сортировка выбором/////////////////////////////////////////////////////////
-int sorts::findSmallestPosition(QList<QStringList>  list, int startPosition, int listLength)
+int sorttext::findSmallestPosition(QStringList list, int startPosition, int listLength)
 {
     int smallestPosition = startPosition;
 
@@ -31,7 +31,7 @@ int sorts::findSmallestPosition(QList<QStringList>  list, int startPosition, int
     return smallestPosition;
 }
 
-QList<QStringList> sorts::selectionSort(QList<QStringList> list, int listLength)
+QStringList sorttext::selectionSort(QStringList list, int listLength)
 {
     for(int i = 0; i < listLength; i++)
     {
@@ -42,8 +42,8 @@ QList<QStringList> sorts::selectionSort(QList<QStringList> list, int listLength)
     return list;
 }
 
-/////////////////////////////Сортировка вставками///////////////////////////////////////////////////
-QList<QStringList> sorts::insertionSort(QList<QStringList> list, int listLength)
+///////////////////////////Сортировка вставками///////////////////////////////////////////////////
+QStringList sorttext::insertionSort(QStringList list, int listLength)
 {
     for(int i = 1; i < listLength; i++)
         {
@@ -59,7 +59,7 @@ QList<QStringList> sorts::insertionSort(QList<QStringList> list, int listLength)
 }
 
 /////////////////////////////Сортировка Шелла/////////////////////////////////
-QList<QStringList> sorts::shellSort(QList<QStringList> list, int listLength)
+QStringList sorttext::shellSort(QStringList list, int listLength)
 {
     for(int step = listLength/2; step > 0; step /= 2)
     {
@@ -77,7 +77,7 @@ QList<QStringList> sorts::shellSort(QList<QStringList> list, int listLength)
     return list;
 }
 /////////////////////////////////Сортировка кучей////////////////////////////////////////
-QList<QStringList>  sorts::heapify(QList<QStringList>  list, int listLength, int root)
+QStringList sorttext::heapify(QStringList list, int listLength, int root)
 {
     int largest = root;
     int l = 2*root + 1;
@@ -97,7 +97,7 @@ QList<QStringList>  sorts::heapify(QList<QStringList>  list, int listLength, int
     return list;
 }
 
-QList<QStringList>  sorts::heapSort(QList<QStringList>  list, int listLength)
+QStringList sorttext::heapSort(QStringList list, int listLength)
 {
     for(int i = listLength / 2 - 1; i >= 0; i--)
          list = heapify(list, listLength, i);

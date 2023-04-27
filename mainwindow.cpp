@@ -6,10 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    comboload();
 
-    QStringList lst;
-    lst << "По фамилии" << "По адресам" << "По номеру телефона";
-    ui->comboBox->addItems(lst);
 }
 
 MainWindow::~MainWindow()
@@ -41,7 +39,7 @@ void MainWindow::on_pbOpenFile_released()
            file.close();
 
            int countRows = standardItemsList.size();
-           int countCols = 3;
+           int countCols = 4;
 
             ui->tableWidget->setRowCount(countRows);
             ui->tableWidget->setColumnCount(countCols);
@@ -62,9 +60,13 @@ void MainWindow::on_pbAdd_released()
 {
     FormAdd *dialog = new FormAdd();
     dialog->show();
-    connect(dialog, SIGNAL(guid(QString,QString,QString,QPixmap)), this, SLOT(guidslot(QString,QString,QString,QPixmap)));
+  //  connect(dialog, SIGNAL(guid(QString,QString,QString,QPixmap)), this, SLOT(guidslot(QString,QString,QString,QPixmap)));
+    connect(dialog, SIGNAL(guid(QString,QString,QString,QByteArray)), this, SLOT(guidslot(QString,QString,QString,QByteArray)));
 }
-void MainWindow::guidslot(QString fio, QString adr, QString numphone, QPixmap px){
+
+
+//void MainWindow::guidslot(QString fio, QString adr, QString numphone, QPixmap px){
+void MainWindow::guidslot(QString fio, QString adr, QString numphone, QByteArray imagebyarr){
   int row =  ui->tableWidget->rowCount();
   int col = ui->tableWidget->columnCount();
 
@@ -73,77 +75,134 @@ void MainWindow::guidslot(QString fio, QString adr, QString numphone, QPixmap px
   ui->tableWidget->setItem(row , 1,new QTableWidgetItem(adr));
   ui->tableWidget->setItem(row, 2,new QTableWidgetItem(numphone));
 
- QTableWidgetItem* item = new QTableWidgetItem( );
-
-  item->setData( Qt::DecorationRole, px );
-
-   ui->tableWidget->horizontalHeader()->resizeSection(0, 200);
-   ui->tableWidget->verticalHeader()->resizeSection(0, 200);
-
-  ui->tableWidget->setItem( row, 3, item );
+  ui->tableWidget->setItem(row, 3,new QTableWidgetItem(QString(imagebyarr.toBase64())));
 
 
  }
-QList<QStringList> MainWindow::Sorting(QList<QStringList> list){
-    int row = ui->tableWidget->rowCount();
-
-    sorts sortt;
-    switch (ui->comboBox->currentIndex()) {
-        case 0:
-            qDebug() << "По фамилии";
 
 
-            sortt.bubbleSort(&list, row);
+void MainWindow::comboload(){
+    QStringList lst;
+    lst << "Пузырьковая сортировка"
+        << "Сортировка выбором"
+        << "Сортировка вставками"
+        << "Сортировка Шелла"
+        << "Сортировка кучей";
+    ui->cb_var_sort->addItems(lst);
+    QStringList lsst;
+    lsst << "По 1" << " По 2" << " По 3" << "По всем";
+    ui->cb_wh_col_by_sort->addItems(lsst);
+}
+int MainWindow::combobox2info(){
 
-            break;
-        case 1:
-            qDebug() << "По адресам";
-            for (int i = 0; i < row; i++){
-                QString t1 = list[i][0];
-                QString t2 = list[i][1];
-                list[i][0] = t2;
-                list[i][1] = t1;
-
-            }
-
-           sortt.bubbleSort(&list, row);
-
-           for (int i = 0; i < row; i++){
-               QString t1 = list[i][0];
-               QString t2 = list[i][1];
-               list[i][0] = t2;
-               list[i][1] = t1;
-
-           }
-            break;
+    switch (ui->cb_wh_col_by_sort->currentIndex()) {
+    case 0:
+        return 0;
+        break;
+    case 1:
+        return 1;
+        break;
     case 2:
-        qDebug() << "По номерам";
-        for (int i = 0; i < row; i++){
-            QString t1 = list[i][0];
-            QString t2 = list[i][2];
-            list[i][0] = t2;
-            list[i][2] = t1;
-            qDebug() << list[i];
-        }
-
-       sortt.bubbleSort(&list, row);
-
-       for (int i = 0; i < row; i++){
-           QString t1 = list[i][0];
-           QString t2 = list[i][2];
-           list[i][0] = t2;
-           list[i][2] = t1;
-
-       }
+        return 2;
+        break;
+    case 3:
+       return 3;
+        break;
+    default:
+        break;
+    }
+}
+QStringList  MainWindow::combobox1info(QStringList list){
+ int row = ui->tableWidget->rowCount();
+     sorttext sorttxt;
+    switch (ui->cb_var_sort->currentIndex()) {
+    case 0:
+        list = sorttxt.bubbleSort(list,row);
+       return list;
+        break;
+    case 1:
+       list = sorttxt.selectionSort(list, row);
+       return list;
+        break;
+    case 2:
+        list = sorttxt.insertionSort(list, row);
+        return list;
         break;
 
+    case 3:
+        list = sorttxt.shellSort(list, row);
+        return list;
+        break;
+    case 4:
+        list = sorttxt.heapSort(list, row);
+        return list;
+        break;
+    default:
+        break;
     }
+}
+QList<QStringList>  MainWindow::combobox1infostring(QList<QStringList> list){
+ int row = ui->tableWidget->rowCount();
+        sorts sorttxt;
+    switch (ui->cb_var_sort->currentIndex()) {
+    case 0:
+        list = sorttxt.bubbleSort(list,row);
+       return list;
+        break;
+    case 1:
+       list = sorttxt.selectionSort(list, row);
+       return list;
+        break;
+    case 2:
+        list = sorttxt.insertionSort(list, row);
+        return list;
+        break;
 
+    case 3:
+        list = sorttxt.shellSort(list, row);
+        return list;
+        break;
+    case 4:
+        list = sorttxt.heapSort(list, row);
+        return list;
+        break;
+    default:
+        break;
+    }
+}
+QList<QStringList> MainWindow::Sorting(QList<QStringList> list){
+
+    int row = ui->tableWidget->rowCount();
+    int column = ui->tableWidget->columnCount();
+   // int comb1 = combobox1info();
+    int comb2 = combobox2info();
+
+
+     QStringList listittem;
+    if (comb2 == 0 || comb2 == 1 || comb2 == 2)
+    {
+
+        for (int i = 0; i < row; i++){
+
+            listittem.append(list[i][comb2]);
+        }
+
+        listittem = combobox1info(listittem);
+
+        for (int i = 0; i < row; i++){
+
+            list[i][comb2] = listittem[i];
+        }
+    }else {
+       list = combobox1infostring(list);
+    }
     return list;
 
 
 
 }
+
+
 void MainWindow::on_pbSort_released()
 {
     int row = ui->tableWidget->rowCount();
@@ -222,6 +281,8 @@ void MainWindow::on_lEditfind_textChanged(const QString &arg1)
 void MainWindow::on_pbsave_released()
 {
 
+
+
        QString filepath=QFileDialog::getSaveFileName(this,tr("Save"),".",tr(" (*.csv)"));
        if(!filepath.isEmpty()){
            QFile f(filepath);
@@ -234,6 +295,7 @@ void MainWindow::on_pbsave_released()
            {
               for(int c = 0; c< model->columnCount(); c++)
               {
+
                  ts << model->index(r,c).data().toString() << ';';
               }
               ts << '\n';
@@ -244,4 +306,13 @@ void MainWindow::on_pbsave_released()
            qDebug() << "\ n успешный экспорт !!!";
        }
 
+}
+
+
+void MainWindow::on_tableWidget_pressed(const QModelIndex &index)
+{
+    int row= ui->tableWidget->currentRow();
+     QByteArray by = QByteArray::fromBase64(ui->tableWidget->item(row,3)->text().toUtf8());
+     QImage image = QImage::fromData(by);
+     ui->label_3->setPixmap(QPixmap::fromImage(image));
 }

@@ -11,13 +11,18 @@ class sorts : public QObject
     Q_OBJECT
 public:
     explicit sorts(QObject *parent = nullptr);
-    void bubbleSort(QList<QStringList>* list, int listLength);
+    QList<QStringList> bubbleSort(QList<QStringList> list, int listLength);
+
+    int findSmallestPosition(QList<QStringList> list, int startPosition, int listLength);
+    QList<QStringList> selectionSort(QList<QStringList> list, int listLength);
+
+    QList<QStringList> insertionSort(QList<QStringList> list, int listLength);
 
 
-    void quickSort(QList<QStringList>* list, int listLength);
+    QList<QStringList> shellSort(QList<QStringList> list, int listLength);
 
-
-    void insertionSort(QList<QStringList>*  list, int listLength);
+    QList<QStringList> heapify(QList<QStringList> list, int listLength, int root);
+    QList<QStringList> heapSort(QList<QStringList> list, int listLength);
 public slots:
 
 };

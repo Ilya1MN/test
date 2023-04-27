@@ -27,12 +27,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     formadd.cpp \
-    sorts.cpp
+    sorts.cpp \
+    sorttext.cpp
 
 HEADERS += \
         mainwindow.h \
     formadd.h \
-    sorts.h
+    sorts.h \
+    sorttext.h
 
 FORMS += \
         mainwindow.ui \
